@@ -218,25 +218,14 @@
 
     /* ============================================================
        GATEKEEPER LOCK OVERLAY
+       Overlay kini dikelola sepenuhnya via Tailwind utility classes.
+       CSS di sini hanya menyediakan backdrop-blur vendor prefix
+       agar kompatibel dengan Safari/WebKit.
     ============================================================ */
-    .gatekeeper-locked {
-      position: relative;
+    #lock-overlay {
+      -webkit-backdrop-filter: blur(8px);
+      backdrop-filter: blur(8px);
     }
-    .gatekeeper-locked .lock-overlay {
-      position: absolute;
-      inset: 0;
-      backdrop-filter: blur(4px);
-      -webkit-backdrop-filter: blur(4px);
-      background: rgba(11,11,11,0.75);
-      border-radius: inherit;
-      display: flex;
-      flex-direction: column;
-      align-items: center;
-      justify-content: center;
-      gap: 12px;
-      z-index: 10;
-    }
-    .gatekeeper-locked .lock-overlay.hidden { display: none; }
 
     /* ============================================================
        TOAST NOTIFICATIONS
@@ -677,6 +666,8 @@
          SECTION 3 · FASE KONSUMSI: GATEKEEPER VERIFICATION
     ────────────────────────────────────────────────────────────── -->
     <section aria-labelledby="section-validate-heading">
+
+      <!-- Section Header Row -->
       <div class="flex items-center gap-4 mb-6">
         <div>
           <div class="phase-badge text-silver mb-1">◆ FASE 03 · KONSUMSI</div>
@@ -685,40 +676,88 @@
           </h2>
         </div>
         <div class="flex-1 scanline-divider"></div>
-        <!-- Access level indicator -->
+        <!-- Access level indicator badge -->
         <div id="gatekeeper-access-indicator" class="flex-shrink-0 hidden">
           <span id="gatekeeper-access-badge" class="role-badge fan text-[10px]">ACCESS: DENIED</span>
         </div>
       </div>
 
-      <!-- Gatekeeper Card with Lock Overlay -->
-      <div class="glass-card rounded-xl overflow-hidden gatekeeper-locked" id="gatekeeper-section">
-        <!-- LOCK OVERLAY (shown for non-owners) -->
-        <div class="lock-overlay" id="lock-overlay" role="status" aria-label="Akses terkunci untuk FAN">
-          <div class="text-center px-6">
-            <!-- Padlock SVG -->
-            <svg width="40" height="40" viewBox="0 0 24 24" fill="none" stroke="rgba(255,255,255,0.25)" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" class="mx-auto mb-3">
-              <rect x="3" y="11" width="18" height="11" rx="2" ry="2"/>
-              <path d="M7 11V7a5 5 0 0 1 10 0v4"/>
-            </svg>
-            <p class="font-display font-bold text-white/50 text-xs uppercase tracking-widest mb-1">AKSES TERBATAS</p>
-            <p class="text-silver/40 text-xs leading-relaxed max-w-xs">
-              Fitur ini hanya tersedia untuk <strong class="text-silver/60">Promotor / Owner</strong> kontrak.
-              Hubungkan wallet dengan alamat owner untuk membuka akses.
-            </p>
-            <div class="mt-3 role-badge fan text-[10px] inline-block">ROLE-BASED ACCESS CONTROL</div>
-          </div>
-        </div>
+      <!--
+        CONTAINER PEMBUNGKUS UTAMA — `relative` wajib ada di sini
+        agar overlay `absolute inset-0` di dalamnya menempel
+        presisi pada batas card ini, bukan pada viewport.
+      -->
+      <div id="gatekeeper-section" class="glass-card rounded-xl relative">
 
-        <!-- Gatekeeper Inner Content -->
-        <div class="p-6 sm:p-8 relative overflow-hidden">
+        <!-- ══════════════════════════════════════════════════════
+             LOCK OVERLAY — Tampil saat isOwner = false
+             • absolute inset-0  → menutupi seluruh area card
+             • backdrop-blur-md  → konten di bawah terlihat buram
+             • bg-black/75       → layer gelap semi-transparan
+             • flex …center      → konten peringatan selalu ditengah
+             • z-20              → di atas konten inner (z-10)
+             • rounded-xl        → mengikuti border-radius parent
+             Status awal: DITAMPILKAN (hidden akan dilepas oleh JS
+             hanya jika wallet yang connect adalah admin kontrak)
+        ══════════════════════════════════════════════════════ -->
+        <div
+          id="lock-overlay"
+          role="status"
+          aria-label="Akses terkunci — hanya untuk Promotor/Admin"
+          class="absolute inset-0 z-20 rounded-xl bg-black/75 flex flex-col items-center justify-center text-center px-6 py-10"
+        >
+          <!-- Ikon Gembok -->
+          <svg
+            width="44" height="44"
+            viewBox="0 0 24 24"
+            fill="none"
+            stroke="rgba(168,168,168,0.5)"
+            stroke-width="1.5"
+            stroke-linecap="round"
+            stroke-linejoin="round"
+            class="mb-4"
+            aria-hidden="true"
+          >
+            <rect x="3" y="11" width="18" height="11" rx="2" ry="2"/>
+            <path d="M7 11V7a5 5 0 0 1 10 0v4"/>
+          </svg>
+
+          <!-- Teks Utama -->
+          <p class="font-display font-black text-white/60 text-sm uppercase tracking-widest mb-2">
+            AKSES TERBATAS
+          </p>
+
+          <!-- Sub-teks -->
+          <p class="text-silver/50 text-xs leading-relaxed max-w-[280px] mb-4">
+            Fitur ini hanya tersedia untuk
+            <strong class="text-silver/80">Promotor / Admin</strong> kontrak.
+            Hubungkan wallet dengan alamat admin untuk membuka akses.
+          </p>
+
+          <!-- RBAC Label -->
+          <span class="role-badge fan">ROLE-BASED ACCESS CONTROL</span>
+        </div>
+        <!-- ══════════════════════════ END LOCK OVERLAY ═════════════════ -->
+
+        <!-- ══════════════════════════════════════════════════════
+             INNER CONTENT — Selalu dirender secara normal.
+             Blur dari overlay di atas yang membuatnya buram.
+             Konten di sini TIDAK bergeser saat overlay aktif/nonaktif.
+        ══════════════════════════════════════════════════════ -->
+        <div class="relative p-6 sm:p-8 overflow-hidden">
+          <!-- Background section number decorative -->
           <span class="section-num" aria-hidden="true">03</span>
 
-          <div class="grid grid-cols-1 md:grid-cols-2 gap-6 sm:gap-8 relative z-10">
-            <!-- Form Column -->
+          <!-- Grid dua kolom: Form | Info -->
+          <div class="relative z-10 grid grid-cols-1 md:grid-cols-2 gap-6 sm:gap-8">
+
+            <!-- ── Kolom Kiri: Form Input ── -->
             <div class="space-y-4">
               <div>
-                <label for="validate-ticket-id" class="block text-silver/70 text-xs uppercase tracking-widest mb-2">
+                <label
+                  for="validate-ticket-id"
+                  class="block text-silver/70 text-xs uppercase tracking-widest mb-2"
+                >
                   Ticket ID untuk Divalidasi
                 </label>
                 <input
@@ -731,13 +770,14 @@
                 />
               </div>
 
-              <!-- Validation Result Display -->
+              <!-- Panel hasil validasi (diisi oleh JS) -->
               <div id="validation-result" class="hidden">
                 <div id="validation-result-inner" class="p-4 rounded border text-xs space-y-2">
-                  <!-- Filled by JS -->
+                  <!-- Filled by showValidationResult() in app.js -->
                 </div>
               </div>
 
+              <!-- Tombol Validasi -->
               <button
                 id="btn-validate-ticket"
                 class="btn-primary w-full py-3 px-6 rounded text-sm flex items-center justify-center gap-2"
@@ -751,37 +791,44 @@
               </button>
             </div>
 
-            <!-- Info Column -->
+            <!-- ── Kolom Kanan: Info & RBAC ── -->
             <div class="space-y-4">
               <h3 class="font-display font-bold text-white text-sm">Protokol Verifikasi Gatekeeper</h3>
               <div class="space-y-2.5 text-xs text-silver/70 leading-relaxed">
                 <div class="flex items-start gap-2.5">
                   <span class="text-white/40 mt-0.5 flex-shrink-0">▸</span>
-                  <span>Fungsi <code class="text-ghost bg-white/[0.06] px-1 py-0.5 rounded text-[10px]">validateTicket()</code> hanya dapat dipanggil oleh owner/promotor.</span>
+                  <span>Fungsi <code class="text-ghost bg-white/[0.06] px-1 py-0.5 rounded text-[10px]">validateTicket()</code> hanya dapat dipanggil oleh admin/promotor.</span>
                 </div>
                 <div class="flex items-start gap-2.5">
                   <span class="text-white/40 mt-0.5 flex-shrink-0">▸</span>
-                  <span>Tiket yang sudah divalidasi akan ditandai sebagai "used" dan tidak dapat digunakan kembali.</span>
+                  <span>Tiket yang sudah divalidasi akan ditandai <em>isUsed = true</em> dan tidak dapat digunakan kembali.</span>
                 </div>
                 <div class="flex items-start gap-2.5">
                   <span class="text-white/40 mt-0.5 flex-shrink-0">▸</span>
-                  <span>Proses validasi memancarkan event <code class="text-ghost bg-white/[0.06] px-1 py-0.5 rounded text-[10px]">TicketValidated</code> yang tercatat di blockchain.</span>
+                  <span>Proses validasi memancarkan event <code class="text-ghost bg-white/[0.06] px-1 py-0.5 rounded text-[10px]">TicketValidated</code> yang tercatat permanen di blockchain.</span>
                 </div>
               </div>
 
-              <!-- RBAC Notice -->
+              <!-- RBAC Notice Box -->
               <div class="bg-white/[0.02] border border-white/[0.06] rounded p-3.5">
                 <p class="text-white/50 uppercase tracking-widest text-[10px] mb-1.5">🔐 Role-Based Access Control</p>
                 <p class="text-silver/60 text-xs leading-relaxed">
-                  Kontrol akses diimplementasikan di lapisan UI (disabled state) <strong class="text-ghost">dan</strong> 
-                  lapisan smart contract (<code class="text-[10px] bg-white/[0.06] px-1 rounded">onlyOwner</code> modifier),
-                  memberikan proteksi berlapis untuk mencegah akses tidak sah.
+                  Kontrol akses diimplementasikan di dua lapisan:
+                  lapisan <strong class="text-ghost">UI</strong> (overlay + disabled state) dan
+                  lapisan <strong class="text-ghost">smart contract</strong>
+                  (<code class="text-[10px] bg-white/[0.06] px-1 rounded">contract.admin()</code> check),
+                  memberikan proteksi berlapis terhadap akses tidak sah.
                 </p>
               </div>
             </div>
+
           </div>
         </div>
+        <!-- ════════════════════════ END INNER CONTENT ══════════════════ -->
+
       </div>
+      <!-- ═══════════════════════ END GATEKEEPER CONTAINER ══════════════ -->
+
     </section>
 
   </main>

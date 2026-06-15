@@ -432,10 +432,10 @@ function disconnectWallet() {
   btnTransferTicket.disabled   = true;
   btnTransferLabel.textContent = "CONNECT WALLET FIRST";
 
-  // Reset gatekeeper
-  applyGatekeeperLock(false); // lock
+  // Reset gatekeeper — kunci overlay (tampilkan) saat disconnect
+  applyGatekeeperLock(true);
   gatekeeperAccessInd.classList.add("hidden");
-  btnValidateTicket.disabled  = true;
+  btnValidateTicket.disabled   = true;
   btnValidateLabel.textContent = "VALIDATE TICKET & OPEN GATE";
   validationResult.classList.add("hidden");
 }
@@ -467,10 +467,10 @@ function updateWalletUI() {
 // ============================================================
 
 /**
- * Memeriksa apakah wallet yang terhubung adalah owner/deployer kontrak.
+ * Memeriksa apakah wallet yang terhubung adalah admin/deployer kontrak.
  *
  * Proses:
- *  - Memanggil fungsi read-only `owner()` di smart contract
+ *  - Memanggil fungsi read-only `admin()` di smart contract
  *  - Membandingkan hasilnya (case-insensitive) dengan walletAddress saat ini
  *  - Mengupdate badge role di header dan status kunci Gatekeeper Section
  *
@@ -710,13 +710,14 @@ btnValidateTicket.addEventListener("click", async () => {
   try {
     const ticketId = BigInt(ticketIdRaw);
 
-    // Opsional: cek status tiket dulu (read-only, tanpa gas)
-    // Ini memberikan UX yang lebih baik sebelum mengirim transaksi berbayar
+    // Cek status tiket via struct tickets(ticketId) — sesuai ABI kontrak
+    // Struct mengembalikan: { id, owner, isUsed }
     let alreadyUsed = false;
     try {
-      alreadyUsed = await contract.isTicketUsed(ticketId);
+      const ticketData = await contract.tickets(ticketId);
+      alreadyUsed = ticketData.isUsed;
     } catch {
-      // Fungsi isTicketUsed mungkin tidak ada di kontrak versi ini, lanjutkan
+      // Fallback: lanjutkan ke transaksi, biarkan kontrak yang reject jika sudah dipakai
     }
 
     if (alreadyUsed) {
