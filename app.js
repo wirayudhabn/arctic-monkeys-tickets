@@ -480,7 +480,7 @@ async function checkOwnerRole() {
   if (!contract || !walletAddress) return;
 
   try {
-    const contractOwner = await contract.owner();
+    const contractOwner = await contract.admin();
     isOwner = contractOwner.toLowerCase() === walletAddress.toLowerCase();
   } catch (err) {
     // Jika kontrak tidak ditemukan (ADDRESS salah/belum deploy),
