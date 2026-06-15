@@ -913,7 +913,7 @@ function loadMyTickets() {
  */
 function copyToClipboard(ticketId) {
   navigator.clipboard.writeText(ticketId).then(() => {
-    showToast("success", "Copied", `Ticket ID #${ticketId} copied to clipboard!");
+    showToast("success", "Copied", `Ticket ID #${ticketId} copied to clipboard!`);
   }).catch(() => {
     showToast("error", "Copy Failed", "Cannot copy to clipboard");
   });
@@ -964,5 +964,4 @@ async function initAutoConnect() {
   setupMyTicketsEventListeners();
 }
 
-// Jalankan auto-connect saat halaman dimuat
-initAutoConnect();
+
