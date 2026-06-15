@@ -225,6 +225,11 @@ const inputTransferRecip  = document.getElementById("transfer-recipient");
 const btnValidateTicket       = document.getElementById("btn-validate-ticket");
 const btnValidateLabel        = document.getElementById("btn-validate-label");
 const inputValidateId         = document.getElementById("validate-ticket-id");
+
+// My Tickets Dashboard Elements
+const myTicketsList           = document.getElementById("my-tickets-list");
+const btnRefreshTickets       = document.getElementById("btn-refresh-tickets");
+const btnClearTickets         = document.getElementById("btn-clear-tickets");
 const lockOverlay             = document.getElementById("lock-overlay");
 const gatekeeperAccessInd     = document.getElementById("gatekeeper-access-indicator");
 const gatekeeperAccessBadge   = document.getElementById("gatekeeper-access-badge");
@@ -589,6 +594,12 @@ btnBuyTicket.addEventListener("click", async () => {
     buyResultId.textContent = `#${displayId}`;
     buyResultWrap.classList.remove("hidden");
 
+    // SAVE TICKET KE LOCAL STORAGE
+    if (ticketId) {
+      saveTicketToStorage(ticketId);
+      loadMyTickets(); // Refresh dashboard
+    }
+
     showToast("success", "Tiket Berhasil Dibeli! 🎸",
       `Ticket ID: #${displayId} telah di-mint ke wallet Anda. Simpan ID ini dengan aman.`);
 
@@ -818,6 +829,115 @@ if (window.ethereum) {
 }
 
 // ============================================================
+//  ⑪ᴬ MY TICKETS DASHBOARD — LOCAL STORAGE MANAGEMENT
+// ============================================================
+
+/**
+ * Simpan Ticket ID ke localStorage (JSON format)
+ * @param {string} ticketId - ID tiket yang baru dibeli
+ */
+function saveTicketToStorage(ticketId) {
+  try {
+    const tickets = JSON.parse(localStorage.getItem("amTickets")) || [];
+    
+    // Tambah tiket dengan timestamp
+    tickets.push({
+      id: ticketId,
+      bought: new Date().toLocaleString(),
+      timestamp: Date.now(),
+    });
+    
+    localStorage.setItem("amTickets", JSON.stringify(tickets));
+    console.log(`✓ Ticket #${ticketId} saved to storage`);
+  } catch (err) {
+    console.error("Error saving ticket:", err);
+  }
+}
+
+/**
+ * Muat dan tampilkan semua tiket dari localStorage
+ */
+function loadMyTickets() {
+  try {
+    const tickets = JSON.parse(localStorage.getItem("amTickets")) || [];
+    
+    // Clear container
+    myTicketsList.innerHTML = "";
+    
+    if (tickets.length === 0) {
+      myTicketsList.innerHTML = `
+        <div class="text-center py-8">
+          <p class="text-silver/50 text-sm">📭 Anda belum membeli tiket apapun</p>
+        </div>
+      `;
+      return;
+    }
+    
+    // Sort by timestamp (newest first)
+    tickets.sort((a, b) => b.timestamp - a.timestamp);
+    
+    // Render ticket cards
+    const ticketsHtml = tickets.map((ticket, index) => `
+      <div class="glass-card rounded p-4 flex items-start justify-between gap-4 hover:bg-white/[0.06] transition">
+        <div class="flex-1 min-w-0">
+          <div class="flex items-center gap-2 mb-2">
+            <span class="text-ghost font-mono font-bold text-sm">#{ticket.id}</span>
+            <span class="text-[10px] text-silver/50 bg-white/[0.05] px-2 py-0.5 rounded">Tiket ${index + 1}</span>
+          </div>
+          <p class="text-silver/60 text-xs">Dibeli: ${ticket.bought}</p>
+        </div>
+        <button
+          class="btn-secondary px-3 py-1.5 rounded text-xs flex-shrink-0 whitespace-nowrap"
+          onclick="copyToClipboard('${ticket.id}')"
+          title="Copy Ticket ID"
+        >
+          <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="display:inline; margin-right:4px;">
+            <path d="M16 4h2a2 2 0 012 2v14a2 2 0 01-2 2H6a2 2 0 01-2-2V6a2 2 0 012-2h2"></path>
+            <rect x="8" y="2" width="8" height="4" rx="1" ry="1"></rect>
+          </svg>
+          COPY
+        </button>
+      </div>
+    `).join("");
+    
+    myTicketsList.innerHTML = ticketsHtml;
+  } catch (err) {
+    console.error("Error loading tickets:", err);
+    myTicketsList.innerHTML = `<div class="text-center py-8"><p class="text-red-400 text-sm">❌ Error loading tickets</p></div>`;
+  }
+}
+
+/**
+ * Copy Ticket ID ke clipboard
+ * @param {string} ticketId 
+ */
+function copyToClipboard(ticketId) {
+  navigator.clipboard.writeText(ticketId).then(() => {
+    showToast("success", "Copied", `Ticket ID #${ticketId} copied to clipboard!");
+  }).catch(() => {
+    showToast("error", "Copy Failed", "Cannot copy to clipboard");
+  });
+}
+
+/**
+ * Setup event listeners untuk My Tickets buttons
+ */
+function setupMyTicketsEventListeners() {
+  btnRefreshTickets?.addEventListener("click", () => {
+    loadMyTickets();
+    showToast("info", "Refreshed", "Ticket list updated.");
+  });
+  
+  btnClearTickets?.addEventListener("click", () => {
+    if (confirm("Hapus semua riwayat tiket? Aksi ini tidak dapat dibatalkan.")) {
+      localStorage.removeItem("amTickets");
+      loadMyTickets();
+      showToast("success", "Cleared", "Ticket history cleared.");
+    }
+  });
+}
+
+// ============================================================
 //  ⑫ INISIALISASI AWAL
 // ============================================================
 
@@ -838,6 +958,10 @@ async function initAutoConnect() {
   } catch (err) {
     console.warn("Auto-connect gagal:", parseError(err));
   }
+  
+  // Load My Tickets dari localStorage
+  loadMyTickets();
+  setupMyTicketsEventListeners();
 }
 
 // Jalankan auto-connect saat halaman dimuat
