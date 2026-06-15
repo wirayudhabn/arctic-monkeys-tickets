@@ -15,7 +15,7 @@
 // ============================================================
 
 /** @type {string} Alamat smart contract hasil deploy di Sepolia */
-const CONTRACT_ADDRESS = "0x6C339FfEcbc9C011bB8d08796FE7Fd146812D9B5";
+const CONTRACT_ADDRESS = "0x6C3591550aA465CB03AC6124A1377e1e9302D9B5";
 
 /**
  * @type {Array} ABI dari smart contract ConcertTicketing.
@@ -30,93 +30,150 @@ const CONTRACT_ADDRESS = "0x6C339FfEcbc9C011bB8d08796FE7Fd146812D9B5";
  *  - isTicketUsed(uint256 ticketId) atau tickets(uint256 id)
  */
 const CONTRACT_ABI = [
-  // ── Owner ──────────────────────────────────────────────────
-  {
-    "inputs": [],
-    "name": "owner",
-    "outputs": [{ "internalType": "address", "name": "", "type": "address" }],
-    "stateMutability": "view",
-    "type": "function"
-  },
-  // ── Beli Tiket ─────────────────────────────────────────────
-  {
-    "inputs": [],
-    "name": "buyTicket",
-    "outputs": [{ "internalType": "uint256", "name": "", "type": "uint256" }],
-    "stateMutability": "payable",
-    "type": "function"
-  },
-  // ── Transfer Tiket ─────────────────────────────────────────
-  {
-    "inputs": [
-      { "internalType": "uint256", "name": "ticketId", "type": "uint256" },
-      { "internalType": "address", "name": "newOwner", "type": "address" }
-    ],
-    "name": "transferTicket",
-    "outputs": [],
-    "stateMutability": "nonpayable",
-    "type": "function"
-  },
-  // ── Validasi / Gunakan Tiket ────────────────────────────────
-  {
-    "inputs": [
-      { "internalType": "uint256", "name": "ticketId", "type": "uint256" }
-    ],
-    "name": "validateTicket",
-    "outputs": [],
-    "stateMutability": "nonpayable",
-    "type": "function"
-  },
-  // ── Cek Pemilik Tiket ───────────────────────────────────────
-  {
-    "inputs": [
-      { "internalType": "uint256", "name": "ticketId", "type": "uint256" }
-    ],
-    "name": "ownerOf",
-    "outputs": [{ "internalType": "address", "name": "", "type": "address" }],
-    "stateMutability": "view",
-    "type": "function"
-  },
-  // ── Cek Status Tiket (digunakan / belum) ────────────────────
-  {
-    "inputs": [
-      { "internalType": "uint256", "name": "ticketId", "type": "uint256" }
-    ],
-    "name": "isTicketUsed",
-    "outputs": [{ "internalType": "bool", "name": "", "type": "bool" }],
-    "stateMutability": "view",
-    "type": "function"
-  },
-  // ── Events ─────────────────────────────────────────────────
-  {
-    "anonymous": false,
-    "inputs": [
-      { "indexed": true,  "internalType": "uint256", "name": "ticketId", "type": "uint256" },
-      { "indexed": true,  "internalType": "address", "name": "buyer",    "type": "address" }
-    ],
-    "name": "TicketPurchased",
-    "type": "event"
-  },
-  {
-    "anonymous": false,
-    "inputs": [
-      { "indexed": true,  "internalType": "uint256", "name": "ticketId", "type": "uint256" },
-      { "indexed": true,  "internalType": "address", "name": "from",     "type": "address" },
-      { "indexed": true,  "internalType": "address", "name": "to",       "type": "address" }
-    ],
-    "name": "TicketTransferred",
-    "type": "event"
-  },
-  {
-    "anonymous": false,
-    "inputs": [
-      { "indexed": true,  "internalType": "uint256", "name": "ticketId", "type": "uint256" },
-      { "indexed": false, "internalType": "address", "name": "validator", "type": "address" }
-    ],
-    "name": "TicketValidated",
-    "type": "event"
-  }
-];
+	{
+		"inputs": [],
+		"stateMutability": "nonpayable",
+		"type": "constructor"
+	},
+	{
+		"inputs": [],
+		"name": "admin",
+		"outputs": [
+			{
+				"internalType": "address",
+				"name": "",
+				"type": "address"
+			}
+		],
+		"stateMutability": "view",
+		"type": "function"
+	},
+	{
+		"inputs": [],
+		"name": "buyTicket",
+		"outputs": [],
+		"stateMutability": "payable",
+		"type": "function"
+	},
+	{
+		"inputs": [
+			{
+				"internalType": "address",
+				"name": "",
+				"type": "address"
+			}
+		],
+		"name": "hasPurchased",
+		"outputs": [
+			{
+				"internalType": "bool",
+				"name": "",
+				"type": "bool"
+			}
+		],
+		"stateMutability": "view",
+		"type": "function"
+	},
+	{
+		"inputs": [],
+		"name": "maxTickets",
+		"outputs": [
+			{
+				"internalType": "uint256",
+				"name": "",
+				"type": "uint256"
+			}
+		],
+		"stateMutability": "view",
+		"type": "function"
+	},
+	{
+		"inputs": [],
+		"name": "ticketPrice",
+		"outputs": [
+			{
+				"internalType": "uint256",
+				"name": "",
+				"type": "uint256"
+			}
+		],
+		"stateMutability": "view",
+		"type": "function"
+	},
+	{
+		"inputs": [
+			{
+				"internalType": "uint256",
+				"name": "",
+				"type": "uint256"
+			}
+		],
+		"name": "tickets",
+		"outputs": [
+			{
+				"internalType": "uint256",
+				"name": "id",
+				"type": "uint256"
+			},
+			{
+				"internalType": "address",
+				"name": "owner",
+				"type": "address"
+			},
+			{
+				"internalType": "bool",
+				"name": "isUsed",
+				"type": "bool"
+			}
+		],
+		"stateMutability": "view",
+		"type": "function"
+	},
+	{
+		"inputs": [],
+		"name": "totalSold",
+		"outputs": [
+			{
+				"internalType": "uint256",
+				"name": "",
+				"type": "uint256"
+			}
+		],
+		"stateMutability": "view",
+		"type": "function"
+	},
+	{
+		"inputs": [
+			{
+				"internalType": "uint256",
+				"name": "_ticketId",
+				"type": "uint256"
+			},
+			{
+				"internalType": "address",
+				"name": "_to",
+				"type": "address"
+			}
+		],
+		"name": "transferTicket",
+		"outputs": [],
+		"stateMutability": "nonpayable",
+		"type": "function"
+	},
+	{
+		"inputs": [
+			{
+				"internalType": "uint256",
+				"name": "_ticketId",
+				"type": "uint256"
+			}
+		],
+		"name": "validateTicket",
+		"outputs": [],
+		"stateMutability": "nonpayable",
+		"type": "function"
+	}
+]
 
 // ============================================================
 //  ② STATE GLOBAL APLIKASI
