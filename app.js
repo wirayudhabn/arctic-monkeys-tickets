@@ -554,62 +554,46 @@ function applyGatekeeperLock(locked) {
  *
  * @returns {Promise<void>}
  */
+// ============================================================
+// ⑧ FITUR WEB3: BUY TICKET
+// ============================================================
 btnBuyTicket.addEventListener("click", async () => {
-  if (!contract) return;
+    if (!contract) return;
+    setLoading(btnBuyTicket, btnBuyLabel, true);
+    buyResultWrap.classList.add("hidden"); 
 
-  setLoading(btnBuyTicket, btnBuyLabel, true);
-  buyResultWrap.classList.add("hidden");
+    try {
+        // 1. Tentukan harga tiket
+        const ticketPrice = ethers.parseEther("0.01");
 
-  try {
-    const ticketPrice = ethers.parseEther("0.01");
+        // 2. Panggil fungsi buyTicket di smart contract dan kirim value ETH
+        const tx = await contract.buyTicket({ value: ticketPrice });
+        showToast("info", "Memproses...", "Harap tunggu transaksi dikonfirmasi.");
 
-    // Panggil fungsi buyTicket() dengan value 0.01 ETH
-    const tx = await contract.buyTicket({ value: ticketPrice });
-    const txHash = tx.hash; // SIMPAN TX HASH
+        // 3. Tunggu hingga transaksi dikonfirmasi oleh jaringan (1 block)
+        const receipt = await tx.wait(1);
 
-    showToast("info", "Transaksi Dikirim",
-      `Menunggu konfirmasi blok... Hash: ${shortenAddress(txHash)}`);
+        // 4. Ambil Ticket ID terbaru.
+        // Karena di Solidity totalSold di-increment sebelum pembuatan tiket,
+        // ID tiket terbaru sama persis dengan angka totalSold saat ini.
+        const totalSold = await contract.totalSold();
+        const ticketId = totalSold.toString(); // <-- Bagian ini yang diubah (hilangkan - 1n)
 
-    // Tunggu 1 konfirmasi blok
-    const receipt = await tx.wait(1);
+        // 5. Tampilkan hasilnya ke UI menggantikan strip "--"
+        buyResultId.textContent = ticketId;
+        buyResultWrap.classList.remove("hidden");
 
-    // ── Coba ekstrak Ticket ID dari event ──────────────────
-    let ticketId = null;
-    if (receipt?.logs?.length > 0) {
-      try {
-        // Parse log menggunakan interface kontrak
-        for (const log of receipt.logs) {
-          try {
-            const parsed = contract.interface.parseLog(log);
-            if (parsed?.name === "TicketPurchased") {
-              ticketId = parsed.args.ticketId?.toString();
-              break;
-            }
-          } catch { /* log dari kontrak lain, skip */ }
-        }
-      } catch { /* tidak ada event, skip */ }
+        // 6. Simpan riwayat tiket ke Local Storage (sudah ada di fungsi Anda)
+        saveTicketToStorage(ticketId, receipt.hash);
+
+        showToast("success", "Pembelian Berhasil", `Anda berhasil membeli tiket dengan ID #${ticketId}.`);
+
+    } catch (err) {
+        const msg = parseError(err);
+        showToast("error", "Pembelian Gagal", msg);
+    } finally {
+        setLoading(btnBuyTicket, btnBuyLabel, false, "BUY TICKET — 0.01 ETH");
     }
-
-    // Tampilkan hasil
-    const displayId = ticketId ?? "—";
-    buyResultId.textContent = `#${displayId}`;
-    buyResultWrap.classList.remove("hidden");
-
-    // SAVE TICKET KE LOCAL STORAGE (dengan TX HASH)
-    if (ticketId) {
-      saveTicketToStorage(ticketId, txHash);
-      loadMyTickets(); // Refresh dashboard
-    }
-
-    showToast("success", "Tiket Berhasil Dibeli! 🎸",
-      `Ticket ID: #${displayId} telah di-mint ke wallet Anda. Simpan ID ini dengan aman.`);
-
-  } catch (err) {
-    const msg = parseError(err);
-    showToast("error", "Pembelian Gagal", msg);
-  } finally {
-    setLoading(btnBuyTicket, btnBuyLabel, false, "BUY TICKET — 0.01 ETH");
-  }
 });
 
 // ============================================================
