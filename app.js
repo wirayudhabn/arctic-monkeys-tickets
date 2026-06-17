@@ -854,7 +854,7 @@ function loadMyTickets() {
     if (tickets.length === 0) {
       myTicketsList.innerHTML = `
         <div class="text-center py-8">
-          <p class="text-silver/50 text-sm">📭 Anda belum membeli tiket apapun</p>
+          <p class="text-silver/50 text-sm">Anda belum membeli tiket apapun</p>
         </div>
       `;
       return;
