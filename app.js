@@ -303,6 +303,8 @@ const walletAddressEl = document.getElementById("wallet-address");
 const roleBadgeWrapper = document.getElementById("role-badge-wrapper");
 const roleBadge = document.getElementById("role-badge");
 const networkStatusLabel = document.getElementById("network-status-label");
+const networkStatusDot = document.getElementById("network-status-dot");
+const networkStatusText = document.getElementById("network-status-text");
 
 // Buy Ticket
 const btnBuyTicket = document.getElementById("btn-buy-ticket");
@@ -520,6 +522,10 @@ function disconnectWallet() {
   btnConnectLabel.textContent = "Connect Wallet";
   btnConnectWallet.disabled = false;
 
+  // Matikan dot network dan text (hapus efek glow)
+  networkStatusDot.classList.remove("connected");
+  networkStatusText.classList.remove("network-text", "connected");
+
   // Reset network label
   networkStatusLabel.textContent = "NOT CONNECTED";
 
@@ -551,6 +557,10 @@ function updateWalletUI() {
 
   // Ubah tombol menjadi Disconnect
   btnConnectLabel.textContent = "Disconnect";
+
+  // Nyalakan dot network dan text dengan efek glow
+  networkStatusDot.classList.add("connected");
+  networkStatusText.classList.add("network-text", "connected");
 
   // Perbarui network label di hero
   networkStatusLabel.textContent = "CONNECTED · SEPOLIA";

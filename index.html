@@ -209,6 +209,64 @@
         display: none;
       }
 
+      /* ============================================================
+       NETWORK DOT - CONNECTED STATE
+    ============================================================ */
+      .network-dot {
+        width: 5px;
+        height: 5px;
+        border-radius: 50%;
+        background-color: rgba(255, 255, 255, 0.5);
+        transition: all 0.3s ease;
+      }
+      .network-dot.connected {
+        background-color: #ffffff;
+        box-shadow:
+          0 0 6px rgba(255, 255, 255, 0.4),
+          0 0 12px rgba(255, 255, 255, 0.25);
+        animation: network-glow-pulse 2s ease-in-out infinite;
+      }
+
+      .network-text {
+        transition: all 0.3s ease;
+        color: rgba(168, 168, 168, 1);
+      }
+      .network-text.connected {
+        color: #ffffff;
+        text-shadow:
+          0 0 6px rgba(255, 255, 255, 0.4),
+          0 0 10px rgba(255, 255, 255, 0.25);
+        animation: network-text-glow 2s ease-in-out infinite;
+      }
+
+      @keyframes network-glow-pulse {
+        0%,
+        100% {
+          box-shadow:
+            0 0 6px rgba(255, 255, 255, 0.4),
+            0 0 12px rgba(255, 255, 255, 0.25);
+        }
+        50% {
+          box-shadow:
+            0 0 8px rgba(255, 255, 255, 0.5),
+            0 0 16px rgba(255, 255, 255, 0.35);
+        }
+      }
+
+      @keyframes network-text-glow {
+        0%,
+        100% {
+          text-shadow:
+            0 0 6px rgba(255, 255, 255, 0.4),
+            0 0 10px rgba(255, 255, 255, 0.25);
+        }
+        50% {
+          text-shadow:
+            0 0 8px rgba(255, 255, 255, 0.5),
+            0 0 12px rgba(255, 255, 255, 0.35);
+        }
+      }
+
       .btn-secondary {
         background: transparent;
         border: 1px solid rgba(255, 255, 255, 0.2);
@@ -602,10 +660,8 @@
             class="mt-4 sm:mt-6 inline-flex flex-wrap items-center gap-2 sm:gap-3 glass-card px-3 sm:px-4 py-2 sm:py-2.5 rounded text-[10px] sm:text-xs"
           >
             <span class="flex items-center gap-1.5">
-              <span
-                class="w-1.5 h-1.5 rounded-full bg-white/50 animate-pulse"
-              ></span>
-              <span class="text-silver">NETWORK</span>
+              <span id="network-status-dot" class="network-dot"></span>
+              <span id="network-status-text" class="text-silver">NETWORK</span>
             </span>
             <span class="text-white/20">|</span>
             <span class="text-ghost font-mono font-semibold"
